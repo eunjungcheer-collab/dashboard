@@ -229,11 +229,13 @@
   .mrow:last-child{border-bottom:none;}
   .mrow .mr-tag{font-family:'Space Mono',monospace; font-size:9.5px; font-weight:700; color:var(--plum); border:1px solid var(--plum-pale); background:var(--plum-pale); padding:2px 6px; border-radius:3px; flex-shrink:0;}
   .mrow .mr-title{flex:1; min-width:0; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
-  .mrow .mr-edit,.mrow .mr-del{background:none; border:none; color:var(--muted); cursor:pointer; font-size:13px; padding:2px 6px; flex-shrink:0;}
+  .mrow .mr-edit,.mrow .mr-del,.mrow .mr-up,.mrow .mr-down{background:none; border:none; color:var(--muted); cursor:pointer; font-size:13px; padding:2px 6px; flex-shrink:0;}
   .mrow .mr-edit:hover{color:var(--rust-deep);}
   .mrow .mr-del:hover{color:#B4432B;}
+  .mrow .mr-up:hover,.mrow .mr-down:hover{color:var(--rust-deep);}
+  .mrow .mr-up:disabled,.mrow .mr-down:disabled{opacity:0.3; cursor:default;}
   .mrow-edit{padding:10px 0; border-bottom:1px solid var(--line);}
-  .mrow-edit .edit-title,.mrow-edit .edit-url{
+  .mrow-edit .edit-title,.mrow-edit .edit-unit,.mrow-edit .edit-url{
     width:100%; background:var(--card-soft); border:1px solid var(--line); color:var(--text);
     padding:8px 10px; border-radius:var(--radius-sm); font-size:12.5px; font-family:inherit;
   }
@@ -349,6 +351,10 @@
         <input type="text" id="addTitle" placeholder="예: 9단원 원소와 화합물">
       </div>
       <div class="field">
+        <label>단원 배지 (선택, 퀴즈일 때 입력)</label>
+        <input type="text" id="addUnit" placeholder="예: 3단원">
+      </div>
+      <div class="field">
         <label>URL 주소</label>
         <input type="text" id="addUrl" placeholder="https://...">
       </div>
@@ -394,23 +400,23 @@ const GRADES = ['초6','중1','중2','중3','공통과학','물리학','화학',
 
 // 백엔드가 아직 연결되지 않았거나 네트워크 오류일 때 보여줄 기본 자료 (읽기 전용)
 const SEED_FALLBACK = [
-  {id:'b-cho6-q1', grade:'초6', type:'quiz', title:'지구의 운동', unit:'4단원', url:'https://eunjungcheer-collab.github.io/6-4/'},
-  {id:'b-jung1-v1', grade:'중1', type:'video', title:'중1 과학 전체 강의', unit:'', url:'https://youtube.com/playlist?list=PLwAliv9fb_U5gpPKSc7s4hugcM4qrhp2s&si=qGxBhfQYCc0kV_eO'},
-  {id:'b-jung2-v1', grade:'중2', type:'video', title:'중2 과학 전체 강의', unit:'', url:'https://youtube.com/playlist?list=PLwAliv9fb_U7W4fqFFSfBADt3aMi9ti0-&si=IlQqBiLzH7Y5vnYk'},
-  {id:'b-jung2-q1', grade:'중2', type:'quiz', title:'물질의 특성', unit:'1단원', url:'https://eunjungcheer-collab.github.io/2-1'},
-  {id:'b-jung2-q2', grade:'중2', type:'quiz', title:'지권의 변화', unit:'2단원', url:'https://eunjungcheer-collab.github.io/2-2'},
-  {id:'b-jung2-q4', grade:'중2', type:'quiz', title:'물질의 구성', unit:'4단원', url:'https://eunjungcheer-collab.github.io/2-4'},
-  {id:'b-jung2-q5', grade:'중2', type:'quiz', title:'식물의 구성', unit:'5단원', url:'https://eunjungcheer-collab.github.io/2-5'},
-  {id:'b-jung2-q6a', grade:'중2', type:'quiz', title:'소화', unit:'6단원', url:'https://eunjungcheer-collab.github.io/2-6-1'},
-  {id:'b-jung2-q6b', grade:'중2', type:'quiz', title:'순환', unit:'6단원', url:'https://eunjungcheer-collab.github.io/2-6-2/'},
-  {id:'b-jung2-q6c', grade:'중2', type:'quiz', title:'호흡', unit:'6단원', url:'https://eunjungcheer-collab.github.io/2-6-3'},
-  {id:'b-jung2-q6d', grade:'중2', type:'quiz', title:'배설', unit:'6단원', url:'https://eunjungcheer-collab.github.io/2-6-4'},
-  {id:'b-jung2-q7', grade:'중2', type:'quiz', title:'전기와 자기', unit:'7단원', url:'https://eunjungcheer-collab.github.io/2-7'},
-  {id:'b-jung2-q8', grade:'중2', type:'quiz', title:'별과 우주', unit:'8단원', url:'https://eunjungcheer-collab.github.io/2-8'},
-  {id:'b-jung3-v1', grade:'중3', type:'video', title:'중3 과학 전체 강의 (2015개정)', unit:'', url:'https://youtube.com/playlist?list=PLwAliv9fb_U4XHvUDsPB8NefoLyFWrDD9&si=5wO92vmbUrLajKT7'},
-  {id:'b-common-v1', grade:'공통과학', type:'video', title:'공통과학1 전체 강의', unit:'', url:'https://youtube.com/playlist?list=PLwAliv9fb_U4ofROEkSm_e_VXYC66ZQhk&si=RJFvXA2Nyo3UR1H3'},
-  {id:'b-common-v2', grade:'공통과학', type:'video', title:'공통과학2 전체 강의', unit:'', url:'https://youtube.com/playlist?list=PLwAliv9fb_U5_iXfHj1i2h4l84OVFPVqI&si=-b9n4slz8bWC2a6p'},
-  {id:'b-interview-q1', grade:'구술면접', type:'quiz', title:'과학교과 구술면접 연습', unit:'면접', url:'https://eunjungcheer-collab.github.io/interviewgms/'}
+  {id:'b-cho6-q1', grade:'초6', type:'quiz', title:'지구의 운동', unit:'4단원', url:'https://eunjungcheer-collab.github.io/6-4/', order:10},
+  {id:'b-jung1-v1', grade:'중1', type:'video', title:'중1 과학 전체 강의', unit:'', url:'https://youtube.com/playlist?list=PLwAliv9fb_U5gpPKSc7s4hugcM4qrhp2s&si=qGxBhfQYCc0kV_eO', order:10},
+  {id:'b-jung2-v1', grade:'중2', type:'video', title:'중2 과학 전체 강의', unit:'', url:'https://youtube.com/playlist?list=PLwAliv9fb_U7W4fqFFSfBADt3aMi9ti0-&si=IlQqBiLzH7Y5vnYk', order:10},
+  {id:'b-jung2-q1', grade:'중2', type:'quiz', title:'물질의 특성', unit:'1단원', url:'https://eunjungcheer-collab.github.io/2-1', order:10},
+  {id:'b-jung2-q2', grade:'중2', type:'quiz', title:'지권의 변화', unit:'2단원', url:'https://eunjungcheer-collab.github.io/2-2', order:20},
+  {id:'b-jung2-q4', grade:'중2', type:'quiz', title:'물질의 구성', unit:'4단원', url:'https://eunjungcheer-collab.github.io/2-4', order:30},
+  {id:'b-jung2-q5', grade:'중2', type:'quiz', title:'식물의 구성', unit:'5단원', url:'https://eunjungcheer-collab.github.io/2-5', order:40},
+  {id:'b-jung2-q6a', grade:'중2', type:'quiz', title:'소화', unit:'6단원', url:'https://eunjungcheer-collab.github.io/2-6-1', order:50},
+  {id:'b-jung2-q6b', grade:'중2', type:'quiz', title:'순환', unit:'6단원', url:'https://eunjungcheer-collab.github.io/2-6-2/', order:60},
+  {id:'b-jung2-q6c', grade:'중2', type:'quiz', title:'호흡', unit:'6단원', url:'https://eunjungcheer-collab.github.io/2-6-3', order:70},
+  {id:'b-jung2-q6d', grade:'중2', type:'quiz', title:'배설', unit:'6단원', url:'https://eunjungcheer-collab.github.io/2-6-4', order:80},
+  {id:'b-jung2-q7', grade:'중2', type:'quiz', title:'전기와 자기', unit:'7단원', url:'https://eunjungcheer-collab.github.io/2-7', order:90},
+  {id:'b-jung2-q8', grade:'중2', type:'quiz', title:'별과 우주', unit:'8단원', url:'https://eunjungcheer-collab.github.io/2-8', order:100},
+  {id:'b-jung3-v1', grade:'중3', type:'video', title:'중3 과학 전체 강의 (2015개정)', unit:'', url:'https://youtube.com/playlist?list=PLwAliv9fb_U4XHvUDsPB8NefoLyFWrDD9&si=5wO92vmbUrLajKT7', order:10},
+  {id:'b-common-v1', grade:'공통과학', type:'video', title:'공통과학1 전체 강의', unit:'', url:'https://youtube.com/playlist?list=PLwAliv9fb_U4ofROEkSm_e_VXYC66ZQhk&si=RJFvXA2Nyo3UR1H3', order:10},
+  {id:'b-common-v2', grade:'공통과학', type:'video', title:'공통과학2 전체 강의', unit:'', url:'https://youtube.com/playlist?list=PLwAliv9fb_U5_iXfHj1i2h4l84OVFPVqI&si=-b9n4slz8bWC2a6p', order:20},
+  {id:'b-interview-q1', grade:'구술면접', type:'quiz', title:'과학교과 구술면접 연습', unit:'면접', url:'https://eunjungcheer-collab.github.io/interviewgms/', order:10}
 ];
 
 let currentGrade = '초6';
@@ -449,13 +455,14 @@ async function gasPost(payload){
 }
 
 // ---------- data helpers ----------
+function byOrder(a,b){ return (a.order||0) - (b.order||0); }
 function mergedFor(grade){
-  const videos = allLinks.filter(l=>l.grade===grade && l.type==='video');
-  const quizzes = allLinks.filter(l=>l.grade===grade && l.type==='quiz');
+  const videos = allLinks.filter(l=>l.grade===grade && l.type==='video').sort(byOrder);
+  const quizzes = allLinks.filter(l=>l.grade===grade && l.type==='quiz').sort(byOrder);
   return {videos, quizzes};
 }
 function allItemsForGrade(grade){
-  return allLinks.filter(l=>l.grade===grade);
+  return allLinks.filter(l=>l.grade===grade).sort(byOrder);
 }
 
 function escapeHtml(s){
@@ -532,12 +539,23 @@ function renderManageList(){
     return;
   }
 
+  // group-edge info for enabling/disabling up/down buttons
+  const groupPos = {};
+  rows.forEach(item=>{
+    const key = item.grade + '|' + item.type;
+    if(!groupPos[key]) groupPos[key] = [];
+    groupPos[key].push(item.id);
+  });
+
   el.innerHTML = rows.map(item=>{
     if(item.id === editingId){
       return `
         <div class="mrow mrow-edit" data-id="${item.id}">
           <div class="field" style="margin-bottom:8px;">
             <input type="text" class="edit-title" value="${escapeHtml(item.title)}" placeholder="제목">
+          </div>
+          <div class="field" style="margin-bottom:8px;">
+            <input type="text" class="edit-unit" value="${escapeHtml(item.unit||'')}" placeholder="단원 배지 (선택, 예: 3단원)">
           </div>
           <div class="field" style="margin-bottom:8px;">
             <input type="text" class="edit-url" value="${escapeHtml(item.url)}" placeholder="URL">
@@ -548,10 +566,17 @@ function renderManageList(){
           </div>
         </div>`;
     }
+    const key = item.grade + '|' + item.type;
+    const list = groupPos[key] || [];
+    const pos = list.indexOf(item.id);
+    const isFirst = pos <= 0;
+    const isLast = pos === -1 || pos === list.length - 1;
     return `
       <div class="mrow" data-id="${item.id}">
         <span class="mr-tag">${escapeHtml(item.grade)} · ${typeLabel[item.type]||item.type}</span>
-        <span class="mr-title">${escapeHtml(item.title)}</span>
+        <span class="mr-title">${escapeHtml(item.title)}${item.unit ? ' · ' + escapeHtml(item.unit) : ''}</span>
+        <button class="mr-up" data-action="up" data-id="${item.id}" title="위로" ${isFirst?'disabled':''}>▲</button>
+        <button class="mr-down" data-action="down" data-id="${item.id}" title="아래로" ${isLast?'disabled':''}>▼</button>
         <button class="mr-edit" data-action="edit" data-id="${item.id}" title="수정">✎</button>
         <button class="mr-del" data-action="del" data-id="${item.id}" title="삭제">✕</button>
       </div>`;
@@ -583,21 +608,38 @@ function renderManageList(){
       const row = btn.closest('.mrow-edit');
       const id = btn.dataset.id;
       const newTitle = row.querySelector('.edit-title').value.trim();
+      const newUnit = row.querySelector('.edit-unit').value.trim();
       let newUrl = row.querySelector('.edit-url').value.trim();
       if(!newTitle || !newUrl) return;
       if(!/^https?:\/\//i.test(newUrl)) newUrl = 'https://' + newUrl;
       try{ new URL(newUrl); }catch(e){ return; }
 
       btn.disabled = true;
-      const res = await gasPost({action:'update', password:sessionPassword, id, title:newTitle, url:newUrl});
+      const res = await gasPost({action:'update', password:sessionPassword, id, title:newTitle, unit:newUnit, url:newUrl});
       if(res.ok){
         const item = allLinks.find(l=>l.id===id);
-        if(item){ item.title = newTitle; item.url = newUrl; }
+        if(item){ item.title = newTitle; item.unit = newUnit; item.url = newUrl; }
         editingId = null;
         renderManageList();
         renderAll();
       }else{
         alert('수정에 실패했습니다: ' + (res.error||''));
+        btn.disabled = false;
+      }
+    });
+  });
+  el.querySelectorAll('[data-action="up"],[data-action="down"]').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      const id = btn.dataset.id;
+      const direction = btn.dataset.action === 'up' ? 'up' : 'down';
+      btn.disabled = true;
+      const res = await gasPost({action:'reorder', password:sessionPassword, id, direction});
+      if(res.ok){
+        const items = await fetchAllLinks();
+        if(items){ allLinks = items; }
+        renderManageList();
+        renderAll();
+      }else{
         btn.disabled = false;
       }
     });
@@ -666,6 +708,7 @@ document.getElementById('addBtn').addEventListener('click', async ()=>{
   const grade = document.getElementById('addGrade').value;
   const type = document.getElementById('addType').value;
   const title = document.getElementById('addTitle').value.trim();
+  const unit = document.getElementById('addUnit').value.trim();
   const url = document.getElementById('addUrl').value.trim();
   const errEl = document.getElementById('addError');
   const okEl = document.getElementById('addOk');
@@ -678,7 +721,7 @@ document.getElementById('addBtn').addEventListener('click', async ()=>{
 
   const addBtn = document.getElementById('addBtn');
   addBtn.disabled = true;
-  const res = await gasPost({action:'add', password:sessionPassword, grade, type, title, url:normalizedUrl, unit:''});
+  const res = await gasPost({action:'add', password:sessionPassword, grade, type, title, url:normalizedUrl, unit});
   addBtn.disabled = false;
 
   if(!res.ok){
@@ -688,6 +731,7 @@ document.getElementById('addBtn').addEventListener('click', async ()=>{
 
   allLinks.push(res.item);
   document.getElementById('addTitle').value = '';
+  document.getElementById('addUnit').value = '';
   document.getElementById('addUrl').value = '';
   okEl.textContent = '추가되었습니다.';
   renderManageList();
