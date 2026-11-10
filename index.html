@@ -257,15 +257,27 @@
   .gate-foot{margin-top:16px; text-align:center;}
   .gate-foot a{font-size:12px; color:var(--muted); cursor:pointer; text-decoration:underline;}
   .gate-foot a:hover{color:var(--rust-deep);}
-  .who-banner{display:none; position:sticky; top:0; z-index:30; align-items:center; justify-content:space-between; gap:16px; margin:-42px -50px 30px; padding:16px 50px; background:rgba(244,247,255,.86); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); border-bottom:1px solid var(--line);}
+  .who-banner{display:none; position:sticky; top:0; z-index:30; flex-direction:column; align-items:center; text-align:center; gap:6px; margin:-42px -50px 30px; padding:20px 50px 16px; background:rgba(244,247,255,.9); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); border-bottom:1px solid var(--line);}
   .who-banner.show{display:flex;}
-  .who-banner .who-left{display:flex; align-items:center; gap:16px; min-width:0;}
-  .who-banner .who-avatar{flex:none; width:52px; height:52px; border-radius:50%; display:grid; place-items:center; font-size:22px; font-weight:700; color:#fff; background:linear-gradient(135deg,#3B63D6,#1B3FA8); box-shadow:0 6px 16px rgba(35,70,175,.28);}
+  .who-banner .who-avatar{width:46px; height:46px; border-radius:50%; display:grid; place-items:center; font-size:20px; font-weight:700; color:#fff; background:linear-gradient(135deg,#3B63D6,#1B3FA8); box-shadow:0 6px 16px rgba(35,70,175,.28);}
   .who-banner .who-label{font-family:'Space Mono',monospace; font-size:10.5px; letter-spacing:.16em; color:#6D7FB0; text-transform:uppercase;}
-  .who-banner .who-name{font-size:30px; font-weight:700; line-height:1.2; letter-spacing:-0.02em; color:#14224F; word-break:keep-all;}
-  .who-banner .who-name small{font-size:15px; font-weight:500; color:#6D7FB0; margin-left:8px; letter-spacing:0;}
-  .who-banner button{flex:none; background:transparent; color:#2A55C8; border:1px solid #B9C9EE; border-radius:999px; padding:9px 18px; font-size:13px; font-weight:600; font-family:inherit; cursor:pointer; transition:.15s;}
-  .who-banner button:hover{background:#2A55C8; color:#fff; border-color:#2A55C8;}
+  .who-banner .who-name{font-size:30px; font-weight:500; line-height:1.25; letter-spacing:-0.02em; color:#4A5A86; word-break:keep-all;}
+  .who-banner .who-name b{font-weight:800; color:#14224F;}
+  .who-banner .who-logout{position:absolute; top:16px; right:50px; background:transparent; color:#2A55C8; border:1px solid #B9C9EE; border-radius:999px; padding:7px 14px; font-size:12px; font-weight:600; font-family:inherit; cursor:pointer; transition:.15s;}
+  .who-banner .who-logout:hover{background:#2A55C8; color:#fff; border-color:#2A55C8;}
+  .dday-row{display:flex; flex-wrap:wrap; justify-content:center; gap:8px; margin-top:6px;}
+  .dday-row:empty{display:none;}
+  .dday-chip{display:inline-flex; align-items:center; gap:8px; padding:6px 8px 6px 14px; border-radius:999px; background:#fff; border:1px solid #C9D6F2; font-size:13px; color:#27386B;}
+  .dday-chip .dd{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:14px; color:#fff; background:#2A55C8; border-radius:999px; padding:3px 10px;}
+  .dday-chip.soon .dd{background:#D14B3A;}
+  .dday-chip.today .dd{background:#D14B3A; animation:ddp 1.2s ease-in-out infinite;}
+  .dday-chip.past{opacity:.75;} .dday-chip.past .dd{background:#8D99B8;}
+  .dday-chip .dd-date{font-size:11.5px; color:#7584AB;}
+  .dday-chip button{border:0; background:#EEF2FC; color:#4A5A86; border-radius:999px; padding:3px 9px; font-size:11.5px; font-family:inherit; cursor:pointer;}
+  .dday-chip button:hover{background:#DDE6FA;}
+  @keyframes ddp{50%{opacity:.55;}}
+  .dd-admin-row{display:flex; align-items:center; gap:8px; padding:8px 0; border-bottom:1px solid var(--line); font-size:13px;}
+  .dd-admin-row span{flex:1; min-width:0;}
   .user-chip{margin:auto 12px 0; padding:12px 14px; border-top:1px solid var(--line); font-size:12.5px; color:var(--paper); display:none; align-items:center; justify-content:space-between; gap:8px;}
   .user-chip.show{display:flex;}
   .user-chip button{background:rgba(127,168,255,0.16); border:1px solid rgba(127,168,255,0.4); color:#CFE0FF; border-radius:6px; padding:5px 10px; font-size:11.5px; font-family:inherit; cursor:pointer;}
@@ -287,9 +299,9 @@
     .tab{white-space:nowrap;}
     main{padding:26px 18px 34px;}
     .who-banner{margin:-26px -18px 20px; padding:12px 18px;}
-    .who-banner .who-name{font-size:24px;}
-    .who-banner .who-avatar{width:42px; height:42px; font-size:18px;}
-    .who-banner button{padding:8px 12px; font-size:12px;}
+    .who-banner .who-name{font-size:22px;}
+    .who-banner .who-avatar{width:40px; height:40px; font-size:17px;}
+    .who-banner .who-logout{position:static; align-self:flex-end; margin-bottom:-4px;}
     .grade-head h2{font-size:25px;}
     .admin-panel{max-width:100%;}
     .admin-bar{flex-direction:column; align-items:flex-start;}
@@ -316,8 +328,10 @@
 
   <main>
     <div class="who-banner" id="whoBanner">
-      <div class="who-left"><div class="who-avatar" id="whoAvatar"></div><div><div class="who-label">Logged in as</div><div class="who-name" id="whoName"></div></div></div>
-      <button id="whoLogout">다른 학생으로 로그인</button>
+      <button class="who-logout" id="whoLogout">다른 학생으로 로그인</button>
+      <div class="who-avatar" id="whoAvatar"></div>
+      <div class="who-name" id="whoName"></div>
+      <div class="dday-row" id="ddayRow"></div>
     </div>
     <div class="content">
       <div class="grade-head">
@@ -435,6 +449,15 @@
         <select id="manageGradeFilter" onchange="renderManageList()"></select>
       </div>
       <div id="manageList"></div>
+    </div>
+
+    <div class="admin-block">
+      <h4>D-DAY (시험 날짜)</h4>
+      <div class="field"><label>이름</label><input type="text" id="ddTitle" placeholder="예: 중간고사, 과고 소집면접"></div>
+      <div class="field"><label>날짜</label><input type="date" id="ddDate"></div>
+      <div class="error-msg" id="ddError"></div>
+      <button class="btn primary" style="width:100%; margin-top:4px;" id="ddAddBtn">D-DAY 추가</button>
+      <div id="ddAdminList" style="margin-top:10px;"></div>
     </div>
 
     <div class="admin-block">
@@ -620,7 +643,68 @@ function renderMain(){
 function renderAll(){
   renderTabs();
   renderMain();
+  renderDday();
+  renderDdayAdmin();
 }
+
+// ---------- D-DAY (시험 날짜) ----------
+// 강사가 선생님 전용 관리에서 추가 → 시트 'Links'에 grade='D-DAY', type='dday', url='dday:YYYY-MM-DD'로 저장
+const DD_OFF_KEY = 'ej_dday_off_v1';
+function ddayItems(){
+  return allLinks.filter(l=>l && l.type==='dday' && /^dday:\d{4}-\d{2}-\d{2}$/.test(l.url||''))
+    .map(l=>{ const d = l.url.slice(5); const [y,m,dd] = d.split('-').map(Number);
+      const t = new Date(y, m-1, dd); const n = new Date(); n.setHours(0,0,0,0);
+      return {id:l.id, title:l.title, date:d, days:Math.round((t-n)/86400000)}; })
+    .sort((a,b)=>a.date<b.date?-1:1);
+}
+function ddayOffList(){ try{ const o = JSON.parse(localStorage.getItem(DD_OFF_KEY)||'{}'); return (o[studentName]||[]); }catch(e){ return []; } }
+function ddayDismiss(id){ try{ const o = JSON.parse(localStorage.getItem(DD_OFF_KEY)||'{}'); (o[studentName] = o[studentName]||[]).push(id); localStorage.setItem(DD_OFF_KEY, JSON.stringify(o)); }catch(e){} renderDday(); }
+function renderDday(){
+  const row = document.getElementById('ddayRow'); if(!row) return;
+  row.innerHTML = '';
+  if(!studentName) return;
+  const off = ddayOffList();
+  ddayItems().filter(x=>off.indexOf(x.id)===-1).forEach(x=>{
+    const c = document.createElement('div');
+    c.className = 'dday-chip' + (x.days<0?' past': x.days===0?' today': x.days<=7?' soon':'');
+    const label = x.days===0 ? 'D-DAY' : x.days>0 ? 'D-'+x.days : 'D+'+(-x.days);
+    c.innerHTML = '<span>'+escapeHtml(x.title)+'</span><span class="dd-date">'+x.date.slice(5).replace('-','/')+'</span><span class="dd">'+label+'</span>';
+    if(x.days<0){
+      const b = document.createElement('button'); b.textContent = '끝났어요 · 닫기';
+      b.addEventListener('click', ()=> ddayDismiss(x.id)); c.appendChild(b);
+    }
+    row.appendChild(c);
+  });
+}
+function renderDdayAdmin(){
+  const el = document.getElementById('ddAdminList'); if(!el) return;
+  const items = ddayItems();
+  el.innerHTML = items.length ? '' : '<div style="font-size:12.5px;color:var(--muted)">등록된 D-DAY가 없습니다.</div>';
+  items.forEach(x=>{
+    const r = document.createElement('div'); r.className = 'dd-admin-row';
+    r.innerHTML = '<span><b>'+escapeHtml(x.title)+'</b> · '+x.date+' ('+(x.days===0?'D-DAY':x.days>0?'D-'+x.days:'D+'+(-x.days))+')</span><button class="btn" data-id="'+escapeHtml(x.id)+'">삭제</button>';
+    r.querySelector('button').addEventListener('click', async ()=>{
+      if(!confirm('"'+x.title+'" D-DAY를 삭제할까요?')) return;
+      const res = await gasPost({action:'delete', password:sessionPassword, id:x.id});
+      if(res.ok){ allLinks = allLinks.filter(l=>l.id!==x.id); renderAll(); }
+      else alert('삭제 실패: '+(res.error||''));
+    });
+    el.appendChild(r);
+  });
+}
+document.getElementById('ddAddBtn').addEventListener('click', async ()=>{
+  const title = document.getElementById('ddTitle').value.trim();
+  const date = document.getElementById('ddDate').value;
+  const err = document.getElementById('ddError'); err.textContent = '';
+  if(!title || !date){ err.textContent = '이름과 날짜를 모두 입력해주세요.'; return; }
+  const btn = document.getElementById('ddAddBtn'); btn.disabled = true;
+  const res = await gasPost({action:'add', password:sessionPassword, grade:'D-DAY', type:'dday', title, url:'dday:'+date, unit:''});
+  btn.disabled = false;
+  if(!res.ok){ err.textContent = '추가 실패: '+(res.error||''); return; }
+  allLinks.push(res.item);
+  document.getElementById('ddTitle').value = ''; document.getElementById('ddDate').value = '';
+  renderAll();
+});
 
 // ---------- admin: manage list (edit/delete any link) ----------
 function renderManageList(){
@@ -942,9 +1026,13 @@ function updateGate(){
   document.getElementById('userChipName').textContent = studentName ? '👤 ' + studentName : '';
   document.getElementById('whoBanner').classList.toggle('show', !!studentName && !teacherView);
   const wn = document.getElementById('whoName');
-  wn.textContent = studentName || '';
-  if(studentName){ const sm = document.createElement('small'); sm.textContent = '학생'; wn.appendChild(sm); }
+  wn.textContent = '';
+  if(studentName){
+    const b = document.createElement('b'); b.textContent = studentName;
+    wn.appendChild(b); wn.appendChild(document.createTextNode(' 학생 환영해요'));
+  }
   document.getElementById('whoAvatar').textContent = studentName ? Array.from(studentName)[0] : '';
+  renderDday();
 }
 function setGateMode(mode){
   gateMode = mode;
