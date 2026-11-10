@@ -451,7 +451,7 @@
 // ============================================================
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbzAC_9Fex_a1lYHFHowsoKjkT2OnRHtLUO1mr8Jz9ieJQd_DVwBTxHXy7qSjdUmz2Tp/exec';
 
-const GRADES = ['초6','중1','중2','중3','공통과학','물리학','화학','생명과학','지구과학','구술면접'];
+const GRADES = ['초6','중1','중2','중3','공통과학1','공통과학2','물리학','화학','생명과학','지구과학','구술면접'];
 
 // 백엔드가 아직 연결되지 않았거나 네트워크 오류일 때 보여줄 기본 자료 (읽기 전용)
 const SEED_FALLBACK = [
@@ -469,12 +469,22 @@ const SEED_FALLBACK = [
   {id:'b-jung2-q7', grade:'중2', type:'quiz', title:'전기와 자기', unit:'7단원', url:'https://eunjungcheer-collab.github.io/2-7', order:90},
   {id:'b-jung2-q8', grade:'중2', type:'quiz', title:'별과 우주', unit:'8단원', url:'https://eunjungcheer-collab.github.io/2-8', order:100},
   {id:'b-jung3-v1', grade:'중3', type:'video', title:'중3 과학 전체 강의 (2015개정)', unit:'', url:'https://youtube.com/playlist?list=PLwAliv9fb_U4XHvUDsPB8NefoLyFWrDD9&si=5wO92vmbUrLajKT7', order:10},
-  {id:'b-common-v1', grade:'공통과학', type:'video', title:'공통과학1 전체 강의', unit:'', url:'https://youtube.com/playlist?list=PLwAliv9fb_U4ofROEkSm_e_VXYC66ZQhk&si=RJFvXA2Nyo3UR1H3', order:10},
-  {id:'b-common-v2', grade:'공통과학', type:'video', title:'공통과학2 전체 강의', unit:'', url:'https://youtube.com/playlist?list=PLwAliv9fb_U5_iXfHj1i2h4l84OVFPVqI&si=-b9n4slz8bWC2a6p', order:20},
+  {id:'b-common-v1', grade:'공통과학1', type:'video', title:'공통과학1 전체 강의', unit:'', url:'https://youtube.com/playlist?list=PLwAliv9fb_U4ofROEkSm_e_VXYC66ZQhk&si=RJFvXA2Nyo3UR1H3', order:10},
+  {id:'b-common-v2', grade:'공통과학2', type:'video', title:'공통과학2 전체 강의', unit:'', url:'https://youtube.com/playlist?list=PLwAliv9fb_U5_iXfHj1i2h4l84OVFPVqI&si=-b9n4slz8bWC2a6p', order:20},
   {id:'b-interview-q1', grade:'구술면접', type:'quiz', title:'과학교과 구술면접 연습', unit:'면접', url:'https://eunjungcheer-collab.github.io/interviewgms/', order:10}
 ];
 
 let currentGrade = '초6';
+// 예전 '공통과학' 자료는 제목에 2가 들어 있으면 공통과학2, 아니면 공통과학1로 자동 분류
+function normLinks(a){
+  return (a||[]).map(l=>{
+    if(l && l.grade==='공통과학'){
+      const g = /공통과학\s*2|공통\s*2|\b2\b/.test(l.title||'') ? '공통과학2' : '공통과학1';
+      return Object.assign({}, l, {grade:g});
+    }
+    return l;
+  });
+}
 let allLinks = [];        // {id, grade, type, title, unit, url}
 let backendReady = false;
 let sessionPassword = null;
@@ -716,7 +726,7 @@ function renderManageList(){
       const res = await gasPost({action:'reorder', password:sessionPassword, id, direction});
       if(res.ok){
         const items = await fetchAllLinks();
-        if(items){ allLinks = items; }
+        if(items){ allLinks = normLinks(items); }
         renderManageList();
         renderAll();
       }else{
@@ -1041,10 +1051,10 @@ updateGate();
 (async function init(){
   // 지난번에 받아 둔 목록이 있으면 먼저 바로 보여주고, 서버 응답은 뒤에서 반영(앱스크립트가 느려도 화면은 즉시)
   const cached = readLinksCache();
-  if(cached){ allLinks = cached; renderAll(); }
+  if(cached){ allLinks = normLinks(cached); renderAll(); }
   const items = await fetchAllLinks();
   if(items){
-    allLinks = items;
+    allLinks = normLinks(items);
     backendReady = true;
   }else if(!cached){
     allLinks = SEED_FALLBACK.slice();
