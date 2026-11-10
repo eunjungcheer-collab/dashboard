@@ -478,6 +478,15 @@ let currentGrade = '초6';
 // 예전 '공통과학' 자료는 제목에 2가 들어 있으면 공통과학2, 아니면 공통과학1로 자동 분류
 function normLinks(a){
   return (a||[]).map(l=>{
+    // 시트가 '1-2'를 날짜로 바꿔 저장한 경우(2026-01-01T15:00:00.000Z) → '1-2'로 복원
+    if(l && typeof l.unit==='string' && /^\d{4}-\d{2}-\d{2}T/.test(l.unit)){
+      const d = new Date(l.unit);
+      if(!isNaN(d)){
+        const p = new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Seoul',month:'numeric',day:'numeric'}).formatToParts(d);
+        const m = p.find(x=>x.type==='month').value, dd = p.find(x=>x.type==='day').value;
+        l = Object.assign({}, l, {unit: m+'-'+dd});
+      }
+    }
     if(l && l.grade==='공통과학'){
       const g = /공통과학\s*2|공통\s*2|\b2\b/.test(l.title||'') ? '공통과학2' : '공통과학1';
       return Object.assign({}, l, {grade:g});
