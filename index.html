@@ -267,7 +267,6 @@
   .who-banner .who-btn{background:transparent; color:#2A55C8; border:1px solid #B9C9EE; border-radius:999px; padding:7px 14px; font-size:12px; font-weight:600; font-family:inherit; cursor:pointer; transition:.15s;}
   .who-banner .who-btn:hover{background:#2A55C8; color:#fff; border-color:#2A55C8;}
   .dday-row{display:flex; flex-wrap:wrap; justify-content:center; gap:8px; margin-top:6px;}
-  .dday-row:empty{display:none;}
   .dday-chip{display:inline-flex; align-items:center; gap:8px; padding:6px 8px 6px 14px; border-radius:999px; background:#fff; border:1px solid #C9D6F2; font-size:13px; color:#27386B;}
   .dday-chip .dd{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:14px; color:#fff; background:#2A55C8; border-radius:999px; padding:3px 10px;}
   .dday-chip.soon .dd{background:#D14B3A;}
@@ -276,6 +275,9 @@
   .dday-chip .dd-date{font-size:11.5px; color:#7584AB;}
   .dday-chip button{border:0; background:#EEF2FC; color:#4A5A86; border-radius:999px; padding:3px 9px; font-size:11.5px; font-family:inherit; cursor:pointer;}
   .dday-chip button:hover{background:#DDE6FA;}
+  .dday-add{border:1px dashed #9FB3E6; background:transparent; color:#2A55C8; border-radius:999px; padding:6px 14px; font-size:13px; font-weight:600; font-family:inherit; cursor:pointer;}
+  .dday-add:hover{background:#E6EEFF;}
+  .dday-chip .mine{font-size:10.5px; color:#fff; background:#7C8FC4; border-radius:6px; padding:1px 6px;}
   @keyframes ddp{50%{opacity:.55;}}
   .dd-admin-row{display:flex; align-items:center; gap:8px; padding:8px 0; border-bottom:1px solid var(--line); font-size:13px;}
   .dd-admin-row span{flex:1; min-width:0;}
@@ -400,6 +402,21 @@
     <div class="modal-actions">
       <button class="btn" id="spwCancel">취소</button>
       <button class="btn primary" id="spwSubmit">변경하기</button>
+    </div>
+  </div>
+</div>
+
+<!-- 학생 개인 D-DAY -->
+<div class="overlay" id="mddOverlay">
+  <div class="modal">
+    <h3>내 D-DAY 추가</h3>
+    <p class="sub">나만 보는 D-DAY예요. 이 컴퓨터(브라우저)에만 저장돼요.</p>
+    <div class="field"><label>이름</label><input type="text" id="mddTitle" placeholder="예: 수행평가, 학교 시험" maxlength="20"></div>
+    <div class="field"><label>날짜</label><input type="date" id="mddDate"></div>
+    <div class="error-msg" id="mddMsg"></div>
+    <div class="modal-actions">
+      <button class="btn" id="mddCancel">취소</button>
+      <button class="btn primary" id="mddSubmit">추가</button>
     </div>
   </div>
 </div>
@@ -674,6 +691,15 @@ function ddayItems(){
       return {id:l.id, title:l.title, date:d, days:Math.round((t-n)/86400000)}; })
     .sort((a,b)=>a.date<b.date?-1:1);
 }
+const DD_MY_KEY = 'ej_dday_my_v1';
+function myDdayRead(){ try{ const o = JSON.parse(localStorage.getItem(DD_MY_KEY)||'{}'); return o; }catch(e){ return {}; } }
+function myDdayItems(){
+  const arr = (myDdayRead()[studentName]||[]);
+  return arr.filter(x=>x && /^\d{4}-\d{2}-\d{2}$/.test(x.date)).map(x=>{ const [y,m,d] = x.date.split('-').map(Number);
+    const t = new Date(y,m-1,d), n = new Date(); n.setHours(0,0,0,0);
+    return {id:x.id, title:x.title, date:x.date, days:Math.round((t-n)/86400000), mine:true}; });
+}
+function myDdayRemove(id){ try{ const o = myDdayRead(); o[studentName] = (o[studentName]||[]).filter(x=>x.id!==id); localStorage.setItem(DD_MY_KEY, JSON.stringify(o)); }catch(e){} renderDday(); }
 function ddayOffList(){ try{ const o = JSON.parse(localStorage.getItem(DD_OFF_KEY)||'{}'); return (o[studentName]||[]); }catch(e){ return []; } }
 function ddayDismiss(id){ try{ const o = JSON.parse(localStorage.getItem(DD_OFF_KEY)||'{}'); (o[studentName] = o[studentName]||[]).push(id); localStorage.setItem(DD_OFF_KEY, JSON.stringify(o)); }catch(e){} renderDday(); }
 function renderDday(){
@@ -681,18 +707,30 @@ function renderDday(){
   row.innerHTML = '';
   if(!studentName) return;
   const off = ddayOffList();
-  ddayItems().filter(x=>off.indexOf(x.id)===-1).forEach(x=>{
+  const items = ddayItems().filter(x=>off.indexOf(x.id)===-1).concat(myDdayItems()).sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:0);
+  items.forEach(x=>{
     const c = document.createElement('div');
     c.className = 'dday-chip' + (x.days<0?' past': x.days===0?' today': x.days<=7?' soon':'');
     const label = x.days===0 ? 'D-DAY' : x.days>0 ? 'D-'+x.days : 'D+'+(-x.days);
-    c.innerHTML = '<span>'+escapeHtml(x.title)+'</span><span class="dd-date">'+x.date.slice(5).replace('-','/')+'</span><span class="dd">'+label+'</span>';
-    if(x.days<0){
-      const b = document.createElement('button'); b.textContent = '끝났어요 · 닫기';
-      b.addEventListener('click', ()=> ddayDismiss(x.id)); c.appendChild(b);
+    c.innerHTML = (x.mine?'<span class="mine">내</span>':'')+'<span>'+escapeHtml(x.title)+'</span><span class="dd-date">'+x.date.slice(5).replace('-','/')+'</span><span class="dd">'+label+'</span>';
+    if(x.days<0 || x.mine){
+      const b = document.createElement('button'); b.textContent = x.days<0 ? '끝났어요 · 닫기' : '삭제';
+      b.addEventListener('click', ()=> x.mine ? myDdayRemove(x.id) : ddayDismiss(x.id)); c.appendChild(b);
     }
     row.appendChild(c);
   });
+  const add = document.createElement('button'); add.className = 'dday-add'; add.textContent = '+ 내 D-DAY';
+  add.addEventListener('click', ()=>{ document.getElementById('mddTitle').value=''; document.getElementById('mddDate').value=''; document.getElementById('mddMsg').textContent=''; document.getElementById('mddOverlay').classList.add('show'); });
+  row.appendChild(add);
 }
+document.getElementById('mddCancel').addEventListener('click', ()=>document.getElementById('mddOverlay').classList.remove('show'));
+document.getElementById('mddSubmit').addEventListener('click', ()=>{
+  const t = document.getElementById('mddTitle').value.trim(), d = document.getElementById('mddDate').value;
+  if(!t || !d){ document.getElementById('mddMsg').textContent = '이름과 날짜를 모두 입력해 주세요.'; return; }
+  try{ const o = myDdayRead(); (o[studentName] = o[studentName]||[]).push({id:'m-'+Date.now(), title:t, date:d}); localStorage.setItem(DD_MY_KEY, JSON.stringify(o)); }
+  catch(e){ document.getElementById('mddMsg').textContent = '이 브라우저에서는 저장할 수 없어요.'; return; }
+  document.getElementById('mddOverlay').classList.remove('show'); renderDday();
+});
 function renderDdayAdmin(){
   const el = document.getElementById('ddAdminList'); if(!el) return;
   const items = ddayItems();
