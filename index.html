@@ -257,13 +257,15 @@
   .gate-foot{margin-top:16px; text-align:center;}
   .gate-foot a{font-size:12px; color:var(--muted); cursor:pointer; text-decoration:underline;}
   .gate-foot a:hover{color:var(--rust-deep);}
-  .who-banner{display:none; position:sticky; top:0; z-index:30; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; margin:-42px -50px 28px; padding:22px 50px; background:linear-gradient(90deg,#1B3FA8,#2A55C8); color:#fff; box-shadow:0 4px 14px rgba(20,40,110,.25);}
+  .who-banner{display:none; position:sticky; top:0; z-index:30; align-items:center; justify-content:space-between; gap:16px; margin:-42px -50px 30px; padding:16px 50px; background:rgba(244,247,255,.86); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); border-bottom:1px solid var(--line);}
   .who-banner.show{display:flex;}
-  .who-banner .who-label{font-size:13px; opacity:.85; letter-spacing:.02em;}
-  .who-banner .who-name{font-size:34px; font-weight:800; line-height:1.15; letter-spacing:-0.01em; word-break:keep-all;}
-  .who-banner .who-sub{font-size:12.5px; opacity:.85; margin-top:2px;}
-  .who-banner button{background:#fff; color:#1B3FA8; border:0; border-radius:10px; padding:11px 18px; font-size:14px; font-weight:700; font-family:inherit; cursor:pointer;}
-  .who-banner button:hover{background:#E6EEFF;}
+  .who-banner .who-left{display:flex; align-items:center; gap:16px; min-width:0;}
+  .who-banner .who-avatar{flex:none; width:52px; height:52px; border-radius:50%; display:grid; place-items:center; font-size:22px; font-weight:700; color:#fff; background:linear-gradient(135deg,#3B63D6,#1B3FA8); box-shadow:0 6px 16px rgba(35,70,175,.28);}
+  .who-banner .who-label{font-family:'Space Mono',monospace; font-size:10.5px; letter-spacing:.16em; color:#6D7FB0; text-transform:uppercase;}
+  .who-banner .who-name{font-size:30px; font-weight:700; line-height:1.2; letter-spacing:-0.02em; color:#14224F; word-break:keep-all;}
+  .who-banner .who-name small{font-size:15px; font-weight:500; color:#6D7FB0; margin-left:8px; letter-spacing:0;}
+  .who-banner button{flex:none; background:transparent; color:#2A55C8; border:1px solid #B9C9EE; border-radius:999px; padding:9px 18px; font-size:13px; font-weight:600; font-family:inherit; cursor:pointer; transition:.15s;}
+  .who-banner button:hover{background:#2A55C8; color:#fff; border-color:#2A55C8;}
   .user-chip{margin:auto 12px 0; padding:12px 14px; border-top:1px solid var(--line); font-size:12.5px; color:var(--paper); display:none; align-items:center; justify-content:space-between; gap:8px;}
   .user-chip.show{display:flex;}
   .user-chip button{background:rgba(127,168,255,0.16); border:1px solid rgba(127,168,255,0.4); color:#CFE0FF; border-radius:6px; padding:5px 10px; font-size:11.5px; font-family:inherit; cursor:pointer;}
@@ -285,7 +287,9 @@
     .tab{white-space:nowrap;}
     main{padding:26px 18px 34px;}
     .who-banner{margin:-26px -18px 20px; padding:12px 18px;}
-    .who-banner .who-name{font-size:26px;}
+    .who-banner .who-name{font-size:24px;}
+    .who-banner .who-avatar{width:42px; height:42px; font-size:18px;}
+    .who-banner button{padding:8px 12px; font-size:12px;}
     .grade-head h2{font-size:25px;}
     .admin-panel{max-width:100%;}
     .admin-bar{flex-direction:column; align-items:flex-start;}
@@ -312,8 +316,8 @@
 
   <main>
     <div class="who-banner" id="whoBanner">
-      <div><div class="who-label">지금 로그인한 학생</div><div class="who-name" id="whoName"></div><div class="who-sub">내 이름이 아니면 오른쪽 버튼을 눌러 로그아웃하세요.</div></div>
-      <button id="whoLogout">내가 아니에요 · 로그아웃</button>
+      <div class="who-left"><div class="who-avatar" id="whoAvatar"></div><div><div class="who-label">Logged in as</div><div class="who-name" id="whoName"></div></div></div>
+      <button id="whoLogout">다른 학생으로 로그인</button>
     </div>
     <div class="content">
       <div class="grade-head">
@@ -937,7 +941,10 @@ function updateGate(){
   chip.classList.toggle('show', !!studentName);
   document.getElementById('userChipName').textContent = studentName ? '👤 ' + studentName : '';
   document.getElementById('whoBanner').classList.toggle('show', !!studentName && !teacherView);
-  document.getElementById('whoName').textContent = studentName ? studentName + ' 학생' : '';
+  const wn = document.getElementById('whoName');
+  wn.textContent = studentName || '';
+  if(studentName){ const sm = document.createElement('small'); sm.textContent = '학생'; wn.appendChild(sm); }
+  document.getElementById('whoAvatar').textContent = studentName ? Array.from(studentName)[0] : '';
 }
 function setGateMode(mode){
   gateMode = mode;
