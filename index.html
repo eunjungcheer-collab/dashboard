@@ -263,8 +263,9 @@
   .who-banner .who-label{font-family:'Space Mono',monospace; font-size:10.5px; letter-spacing:.16em; color:#6D7FB0; text-transform:uppercase;}
   .who-banner .who-name{font-size:30px; font-weight:500; line-height:1.25; letter-spacing:-0.02em; color:#4A5A86; word-break:keep-all;}
   .who-banner .who-name b{font-weight:800; color:#14224F;}
-  .who-banner .who-logout{position:absolute; top:16px; right:50px; background:transparent; color:#2A55C8; border:1px solid #B9C9EE; border-radius:999px; padding:7px 14px; font-size:12px; font-weight:600; font-family:inherit; cursor:pointer; transition:.15s;}
-  .who-banner .who-logout:hover{background:#2A55C8; color:#fff; border-color:#2A55C8;}
+  .who-banner .who-actions{position:absolute; top:16px; right:50px; display:flex; gap:8px;}
+  .who-banner .who-btn{background:transparent; color:#2A55C8; border:1px solid #B9C9EE; border-radius:999px; padding:7px 14px; font-size:12px; font-weight:600; font-family:inherit; cursor:pointer; transition:.15s;}
+  .who-banner .who-btn:hover{background:#2A55C8; color:#fff; border-color:#2A55C8;}
   .dday-row{display:flex; flex-wrap:wrap; justify-content:center; gap:8px; margin-top:6px;}
   .dday-row:empty{display:none;}
   .dday-chip{display:inline-flex; align-items:center; gap:8px; padding:6px 8px 6px 14px; border-radius:999px; background:#fff; border:1px solid #C9D6F2; font-size:13px; color:#27386B;}
@@ -301,7 +302,7 @@
     .who-banner{margin:-26px -18px 20px; padding:12px 18px;}
     .who-banner .who-name{font-size:22px;}
     .who-banner .who-avatar{width:40px; height:40px; font-size:17px;}
-    .who-banner .who-logout{position:static; align-self:flex-end; margin-bottom:-4px;}
+    .who-banner .who-actions{position:static; align-self:flex-end; margin-bottom:-4px;}
     .grade-head h2{font-size:25px;}
     .admin-panel{max-width:100%;}
     .admin-bar{flex-direction:column; align-items:flex-start;}
@@ -328,7 +329,7 @@
 
   <main>
     <div class="who-banner" id="whoBanner">
-      <button class="who-logout" id="whoLogout">다른 학생으로 로그인</button>
+      <div class="who-actions"><button class="who-btn" id="whoPw">비밀번호 변경</button><button class="who-btn" id="whoLogout">다른 학생으로 로그인</button></div>
       <div class="who-avatar" id="whoAvatar"></div>
       <div class="who-name" id="whoName"></div>
       <div class="dday-row" id="ddayRow"></div>
@@ -384,6 +385,22 @@
     <div class="error-msg" id="gMsg"></div>
     <button class="btn primary" style="width:100%;" id="gSubmit">로그인</button>
     <div class="gate-foot"><a id="gTeacher">선생님 전용 관리</a></div>
+  </div>
+</div>
+
+<!-- 학생 비밀번호 변경 -->
+<div class="overlay" id="spwOverlay">
+  <div class="modal">
+    <h3>내 비밀번호 바꾸기</h3>
+    <p class="sub">바꾼 비밀번호는 퀴즈앱·면접앱 모두에 적용돼요. 새 비밀번호를 꼭 기억해 두세요.</p>
+    <div class="field"><label>현재 비밀번호</label><input type="password" id="spwOld" autocomplete="off"></div>
+    <div class="field"><label>새 비밀번호 (4자 이상)</label><input type="password" id="spwNew" autocomplete="off"></div>
+    <div class="field"><label>새 비밀번호 확인</label><input type="password" id="spwNew2" autocomplete="off"></div>
+    <div class="error-msg" id="spwMsg"></div>
+    <div class="modal-actions">
+      <button class="btn" id="spwCancel">취소</button>
+      <button class="btn primary" id="spwSubmit">변경하기</button>
+    </div>
   </div>
 </div>
 
@@ -1119,6 +1136,33 @@ document.getElementById('gTabSignup').addEventListener('click', ()=> setGateMode
 document.getElementById('gSubmit').addEventListener('click', gateSubmit);
 ['gName','gPw','gPw2'].forEach(id=> document.getElementById(id).addEventListener('keydown', e=>{ if(e.key==='Enter') gateSubmit(); }));
 document.getElementById('gTeacher').addEventListener('click', ()=> document.getElementById('adminOpenBtn').click());
+// ---------- 학생이 스스로 비밀번호 변경 ----------
+function spwMsg(t, ok){ const e = document.getElementById('spwMsg'); e.textContent = t||''; e.className = ok ? 'ok-msg' : 'error-msg'; }
+document.getElementById('whoPw').addEventListener('click', ()=>{
+  ['spwOld','spwNew','spwNew2'].forEach(id=>document.getElementById(id).value='');
+  spwMsg(''); document.getElementById('spwOverlay').classList.add('show');
+});
+document.getElementById('spwCancel').addEventListener('click', ()=>document.getElementById('spwOverlay').classList.remove('show'));
+document.getElementById('spwSubmit').addEventListener('click', async ()=>{
+  const o = document.getElementById('spwOld').value.trim(), n = document.getElementById('spwNew').value.trim(), n2 = document.getElementById('spwNew2').value.trim();
+  if(!o || !n){ spwMsg('현재 비밀번호와 새 비밀번호를 입력해 주세요.'); return; }
+  if(n.length < 4){ spwMsg('새 비밀번호는 4자 이상으로 정해 주세요.'); return; }
+  if(n !== n2){ spwMsg('새 비밀번호 확인이 달라요.'); return; }
+  if(n === o){ spwMsg('현재 비밀번호와 다른 번호로 정해 주세요.'); return; }
+  const btn = document.getElementById('spwSubmit'); btn.disabled = true; spwMsg('변경 중...', true);
+  const oldH = pwHash(studentName, o), newH = pwHash(studentName, n);
+  const sv = await acctGet(studentName);
+  if(!sv.supported){ btn.disabled = false; spwMsg('서버에 연결하지 못했어요. 인터넷을 확인해 주세요.'); return; }
+  if(sv.hash !== oldH){ btn.disabled = false; spwMsg('현재 비밀번호가 맞지 않아요.'); return; }
+  try{ await fetch(ACCT_URL, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify({action:'changePw', name:studentName, oldHash:oldH, newHash:newH})}); }catch(e){}
+  const chk = await acctGet(studentName);
+  btn.disabled = false;
+  if(!(chk.supported && chk.hash === newH)){ spwMsg('변경하지 못했어요. 선생님께 문의해 주세요. (서버에 비밀번호 변경 기능이 아직 설치되지 않았을 수 있어요)'); return; }
+  EJ_SSO.save(studentName, newH, ssoOffPaths());
+  spwMsg('비밀번호가 바뀌었어요! 다음 로그인부터 새 비밀번호를 쓰세요.', true);
+  setTimeout(()=>document.getElementById('spwOverlay').classList.remove('show'), 1600);
+});
+
 ['logoutBtn','whoLogout'].forEach(id=>document.getElementById(id).addEventListener('click', ()=>{
   EJ_SSO.clear();
   studentName = null;
